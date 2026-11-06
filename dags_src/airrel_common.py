@@ -195,6 +195,12 @@ def write_rows(conf, context, table, rows, key_cols):
                 f"INSERT INTO {table} ({col_list}) VALUES ({placeholders})",
                 [row[c] for c in cols],
             )
+            if (i + 1) % 25 == 0:
+                # Same pacing as the naive arm (1.5s per 25 rows), inside
+                # the transaction: without it the hardened write is a fast
+                # burst and the timed F4 kill lands after the run ends
+                # (DECISIONS D15).
+                slow_sleep(conf, 1.5)
             if i + 1 == half:
                 maybe_fault(conf, context)
         conn.commit()

@@ -1,0 +1,16 @@
+{
+ "airflow_version": "3.4.0",
+ "finished_utc": "2026-11-06T19:00:44.567703+00:00",
+ "harness_python": "/home/hatch/workspace/gap-closure/venv-airrel/bin/python",
+ "n_f1f2_per_cell": 10,
+ "phase_errors": {},
+ "python_version": "3.12.3",
+ "runs": [
+  "workdir/run1 (controls, F1, F2, F3, F6, F5-control)",
+  "workdir/run1b (F5, F4; DECISIONS D13, D14)"
+ ],
+ "smoke_mean_wall_seconds": 6.28,
+ "started_utc": "2026-11-06T18:46:05.300688+00:00",
+ "study_repo_head": "01352ccffc7859cfa3c4048da365f6a928100e1d",
+ "trial_count": 305
+}

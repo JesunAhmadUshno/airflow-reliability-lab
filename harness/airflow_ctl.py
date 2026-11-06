@@ -31,10 +31,16 @@ class AirflowDeployment:
         self.home.mkdir(parents=True, exist_ok=True)
         self.logs.mkdir(parents=True, exist_ok=True)
         (self.root / "empty_dags").mkdir(parents=True, exist_ok=True)
+        (self.root / "tmp").mkdir(parents=True, exist_ok=True)
         self.processes = {}
         fernet = base64.urlsafe_b64encode(secrets.token_bytes(32)).decode("ascii")
         self._env = {
             **os.environ,
+            # DAG bundle checkouts live under tempfile.gettempdir(), keyed
+            # only by bundle name: a machine-global location. Without this,
+            # a second deployment silently keeps serving the first
+            # deployment's bundle version (DECISIONS D14).
+            "TMPDIR": str(self.root / "tmp"),
             "AIRFLOW_HOME": str(self.home),
             "AIRFLOW__CORE__EXECUTOR": "LocalExecutor",
             "AIRFLOW__CORE__LOAD_EXAMPLES": "False",

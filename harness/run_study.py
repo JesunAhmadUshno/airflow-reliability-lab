@@ -95,10 +95,15 @@ class Study:
         path.write_text(text, encoding="utf-8")
         subprocess.run(["git", "-C", str(self.bundle_repo), "add", "-A"],
                        check=True, capture_output=True)
-        subprocess.run(
-            ["git", "-C", str(self.bundle_repo), "commit", "-q", "-m",
-             f"bundle marker {version}"],
-            check=True, capture_output=True)
+        dirty = subprocess.run(
+            ["git", "-C", str(self.bundle_repo), "status", "--porcelain"],
+            check=True, capture_output=True, text=True).stdout.strip()
+        if dirty:  # setting the marker to its current value changes nothing;
+            # a commit on a clean tree exits 1, so skip it in that case
+            subprocess.run(
+                ["git", "-C", str(self.bundle_repo), "commit", "-q", "-m",
+                 f"bundle marker {version}"],
+                check=True, capture_output=True)
         return self.bundle_head()
 
     def bundle_config(self):

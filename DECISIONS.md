@@ -58,3 +58,28 @@ AIR-REL study", 2026-11-06).
   partition day, and the data interval under study is the partition carried in
   dag_run.conf. F3's "same data interval" means the same partition and the same
   conf, which is the level at which duplicate effects occur.
+- D13. Harness defect found in the first full run (2026-11-06): the F5 and F4
+  phase setups committed the bundle marker a second time on a clean git tree,
+  which exits 1, so those two phases produced no trials in run 1 (281 of 305
+  records; all other phases complete). The fix makes the marker commit a no-op
+  when nothing changed. F5 and F4 were then run in full in a second deployment
+  (run 1b) and their records merged into results/trials.jsonl. No pre-registered
+  design element changed.
+- D14. Measured platform behaviour (2026-11-06): GitDagBundle checkouts live in
+  a machine-global temp directory keyed by bundle name only
+  (tempfile.gettempdir()/airflow/dag_bundles), seeded from the first repo_url
+  ever configured. A later deployment with a different bundle repo keeps
+  serving the first deployment's version. The harness therefore sets TMPDIR
+  per deployment root. Run 1 validity was verified after the fact: the DAG
+  files in the served checkout are byte-identical to dags_src at the study
+  commit, so all run 1 trials executed the committed code.
+- D15. Pacing defect found in run 1 (2026-11-06): the hardened row-write had no
+  in-loop pacing, so under F4's slow_write it finished in about 4 seconds while
+  the naive write takes about 16 seconds. The timed scheduler kill (write
+  start + 6s) landed after the run had already ended in the 6 hardened
+  ingestion and embedding trials (run durations 6 to 9s, negative recovery
+  values), so those cells did not test a mid-run restart. Fix: batch pacing
+  inside the hardened write loop, identical to the naive arm (1.5s per 25
+  rows, inside the transaction). No write semantics, keys, or fault points
+  changed. The full study was re-run as run 2 under the fixed code; run 1
+  records are superseded.
