@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "airrel"
+version = "0.1.0"
+description = "AIR-REL: effectively-once ML pipelines on Apache Airflow 3.x, a fault-injection study"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "dags_src", "harness"]

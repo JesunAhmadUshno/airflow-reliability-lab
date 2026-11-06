@@ -41,3 +41,13 @@ AIR-REL study", 2026-11-06).
   the registry row. This keeps one real file side effect inside the measured scope.
 - D9. The local control for RQ3 (one run under an unversioned local bundle) is
   exploratory, n = 1, and excluded from the H3 verdict, as pre-registered.
+- D10. Amendments A1 and A2 (SPEC.md section 10) were recorded on 2026-11-06 before
+  any trial ran: the drift threshold was recalibrated to 0.25 from measured fixture
+  values (in-distribution about 0.10, shifted 0.4948), and the F1/F2 kill point for
+  single-row tables was clarified. A unit test caught the threshold problem before
+  the matrix did, which is the outcome the failure gate exists for.
+- D11. The ingestion DAG has a third task (gate) between prepare and write. It is a
+  no-op unless a gate file is configured (fault F5 only). Reason: the mid-run deploy
+  must land before the write task process starts, so the write task's code version
+  is sampled after the deploy. All ingestion trials use the same three-task shape,
+  and per-pipeline clean-run task counts in the harness account for it.

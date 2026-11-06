@@ -174,3 +174,21 @@ that file by src/airrel/report.py and is never hand-typed.
   artifact file is the only file side effect, and it is checked.
 - The monitoring drift method is a single mean-vector distance with a fixed threshold.
   A detection-method comparison is out of scope (Deep pass).
+
+## 10. Amendments before data collection (2026-11-06)
+
+Recorded before any trial ran. The matrix, hypotheses and verdict rules are unchanged.
+
+- A1. Monitoring drift threshold: 0.5 becomes 0.25. Reason: calibration on the fixed
+  corpus and embedder (a property of the test fixtures, not of any pipeline outcome)
+  measured the mean-vector distance at about 0.10 for in-distribution partitions
+  (2026-01-02: 0.1039; 2026-01-03: 0.1028, against the 2026-01-01 reference) and
+  0.4948 for the shifted partition. A 0.5 threshold sits on top of the shifted value
+  and cannot separate the two cases; 0.25 sits between them with margin on both sides.
+- A2. Kill-point clarification for F1 and F2: on the row tables (documents, embeddings)
+  the fault fires after 50 percent of rows, as written in section 6. On the single-row
+  tables (eval, registry, drift) there is no 50 percent of one row; the fault fires at
+  the write point itself: after the insert is durable in the naive arm (post-commit),
+  and inside the open transaction in the hardened arm (pre-commit). For retraining,
+  the hardened fault fires after the atomic artifact rename and before the registry
+  commit. The design intent is unchanged: a partial or uncommitted write, then a retry.
