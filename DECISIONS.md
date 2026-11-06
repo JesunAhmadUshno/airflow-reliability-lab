@@ -51,3 +51,10 @@ AIR-REL study", 2026-11-06).
   must land before the write task process starts, so the write task's code version
   is sampled after the deploy. All ingestion trials use the same three-task shape,
   and per-pipeline clean-run task counts in the harness account for it.
+- D12. Run logical dates are unique per trigger (measured platform behaviour):
+  the Airflow 3.4 create-run API requires a logical_date (422 without one) and
+  rejects a second run for the same DAG with the same logical_date (409). The
+  harness therefore stamps each run with a unique logical time inside the
+  partition day, and the data interval under study is the partition carried in
+  dag_run.conf. F3's "same data interval" means the same partition and the same
+  conf, which is the level at which duplicate effects occur.

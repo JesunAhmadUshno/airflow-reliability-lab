@@ -50,7 +50,7 @@ def iso_epoch(value):
 
 class Study:
     def __init__(self, root, airflow_bin, concurrency=4):
-        self.root = Path(root)
+        self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
         self.airflow_bin = airflow_bin
         self.concurrency = concurrency
@@ -60,6 +60,8 @@ class Study:
         self.records = []
         self.dep = None
         self.n_f1f2 = 10
+        import itertools
+        self._logical_counter = itertools.count()
 
     # -- setup --------------------------------------------------------------
     def setup_bundle(self):
@@ -115,6 +117,7 @@ class Study:
         self.setup_bundle()
         self.dep = AirflowDeployment(self.root, self.airflow_bin, self.bundle_config())
         self.dep.migrate()
+        self.dep.create_git_connection(str(self.bundle_repo))
         self.dep.start_all()
         self.dep.wait_health()
         self.dep.wait_dags([DAG_ID[p] for p in PIPELINES])
@@ -139,16 +142,14 @@ class Study:
 
     def run_one(self, trial_id, dag_id, conf, timeout=300):
         run_id = f"{trial_id}--{uuid.uuid4().hex[:10]}"
-        logical = f"{conf['partition']}T00:00:00Z"
+        logical = self.unique_logical(conf["partition"])
         last_err = None
         for attempt in range(3):
             try:
                 self.dep.trigger(dag_id, run_id, conf, logical_date=logical)
                 break
-            except Exception as exc:  # API hiccup or duplicate logical date
-                last_err = exc
-                if attempt == 1:
-                    logical = None
+            except Exception as exc:  # transient API hiccup; logical_date is
+                last_err = exc          # required by the 3.4 API, never dropped
                 time.sleep(2)
         else:
             raise RuntimeError(f"trigger failed for {run_id}: {last_err}")
@@ -157,6 +158,14 @@ class Study:
         return {"run_id": run_id, "state": run.get("state"),
                 "start": run.get("start_date"), "end": run.get("end_date"),
                 "tis": tis}
+
+    def unique_logical(self, partition):
+        # The 3.4 create-run API rejects a second run with the same
+        # logical_date for a DAG (HTTP 409), so each trigger gets a unique
+        # logical timestamp inside the partition day. The data interval
+        # under study is the partition, carried in conf (DECISIONS D12).
+        n = next(self._logical_counter)
+        return f"{partition}T00:{n // 60:02d}:{n % 60:02d}Z"
 
     def fault_epoch(self, trial_id, run_ids):
         base = self.root / "trials" / trial_id / "markers"
@@ -172,7 +181,10 @@ class Study:
 
     def finish_record(self, spec, runs, check, recovery=None, extra_notes=(),
                       extra_fields=None):
-        total_tries = sum(ti["try_number"] for r in runs for ti in r["tis"])
+        # The 3.4 API lists one task-instance entry per try, so the entry
+        # count is the execution count (summing try_number would double
+        # count: a try-2 entry is one execution, not two).
+        total_tries = sum(len(r["tis"]) for r in runs)
         baseline = sum(BASE_TASKS[r["pipeline"]] for r in runs)
         record = {
             "trial_id": spec["trial_id"],
@@ -391,7 +403,7 @@ class Study:
         conf["gate_file"] = str(gate)
         run_id = f"{trial_id}--{uuid.uuid4().hex[:10]}"
         self.dep.trigger(DAG_ID["ingestion"], run_id, conf,
-                         logical_date=f"{spec['partition']}T00:00:00Z")
+                         logical_date=self.unique_logical(spec["partition"]))
         deadline = time.time() + 180
         while time.time() < deadline:
             tis = self.dep.task_instances(DAG_ID["ingestion"], run_id)
@@ -444,7 +456,7 @@ class Study:
         conf["slow_write"] = True
         run_id = f"{trial_id}--{uuid.uuid4().hex[:10]}"
         self.dep.trigger(DAG_ID[pipeline], run_id, conf,
-                         logical_date=f"{spec['partition']}T00:00:00Z")
+                         logical_date=self.unique_logical(spec["partition"]))
         deadline = time.time() + 240
         write_running_at = None
         while time.time() < deadline:
@@ -508,7 +520,7 @@ class Study:
         conf["gate_file"] = str(gate)
         run_id = f"{trial_id}--{uuid.uuid4().hex[:10]}"
         dep2.trigger(DAG_ID["ingestion"], run_id, conf,
-                     logical_date=f"{spec['partition']}T00:00:00Z")
+                     logical_date=self.unique_logical(spec["partition"]))
         deadline = time.time() + 180
         while time.time() < deadline:
             tis = dep2.task_instances(DAG_ID["ingestion"], run_id)

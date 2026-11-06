@@ -13,6 +13,7 @@ import signal
 import sqlite3
 import subprocess
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -37,6 +38,7 @@ class AirflowDeployment:
             "AIRFLOW_HOME": str(self.home),
             "AIRFLOW__CORE__EXECUTOR": "LocalExecutor",
             "AIRFLOW__CORE__LOAD_EXAMPLES": "False",
+            "AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION": "False",
             "AIRFLOW__CORE__DAGS_FOLDER": str(self.root / "empty_dags"),
             "AIRFLOW__CORE__FERNET_KEY": fernet,
             "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN": f"sqlite:///{self.home}/airflow.db",
@@ -95,23 +97,68 @@ class AirflowDeployment:
         self.start("dag-processor")
         self.start("scheduler")
 
+    def create_git_connection(self, host):
+        result = self._run_cli([
+            "connections", "add", "git_default",
+            "--conn-type", "git", "--conn-host", str(host),
+        ])
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"connections add failed: {result.stderr[-1000:]}")
+
     # -- REST API ----------------------------------------------------------
-    def _auth_header(self):
-        token = base64.b64encode(
-            f"admin:{self.admin_password}".encode("utf-8")
-        ).decode("ascii")
-        return {"Authorization": f"Basic {token}"}
+    def _read_generated_password(self):
+        # SimpleAuthManager (the default in this install) generates the
+        # admin password on first API server start and stores it in a
+        # JSON file in AIRFLOW_HOME. It is authoritative for this local
+        # throwaway deployment.
+        password_file = self.home / "simple_auth_manager_passwords.json.generated"
+        if password_file.exists():
+            try:
+                stored = json.loads(password_file.read_text(encoding="utf-8"))
+                if stored.get("admin"):
+                    self.admin_password = stored["admin"]
+            except Exception:
+                pass
+
+    def _get_token(self):
+        if getattr(self, "_token", None):
+            return self._token
+        self._read_generated_password()
+        data = json.dumps(
+            {"username": "admin", "password": self.admin_password}
+        ).encode("utf-8")
+        req = urllib.request.Request(
+            "http://127.0.0.1:8080/auth/token",
+            data=data,
+            method="POST",
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        self._token = payload["access_token"]
+        return self._token
 
     def api(self, method, path, body=None, timeout=30):
         data = json.dumps(body).encode("utf-8") if body is not None else None
-        req = urllib.request.Request(
-            API_BASE + path,
-            data=data,
-            method=method,
-            headers={**self._auth_header(), "Content-Type": "application/json"},
-        )
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+        for attempt in range(2):
+            req = urllib.request.Request(
+                API_BASE + path,
+                data=data,
+                method=method,
+                headers={
+                    "Authorization": f"Bearer {self._get_token()}",
+                    "Content-Type": "application/json",
+                },
+            )
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    return json.loads(resp.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                if exc.code == 401 and attempt == 0:
+                    self._token = None
+                    continue
+                raise
 
     def wait_health(self, timeout=240):
         deadline = time.time() + timeout
@@ -119,24 +166,28 @@ class AirflowDeployment:
             try:
                 health = self.api("GET", "/monitor/health")
                 if health.get("metadatabase", {}).get("status") == "healthy":
+                    # Health is unauthenticated; prove auth works too.
+                    self.api("GET", "/dags?limit=1")
                     return health
             except Exception:
                 pass
             time.sleep(2)
-        raise RuntimeError("API server did not become healthy")
+        raise RuntimeError("API server did not become healthy (or auth failed)")
 
     def wait_dags(self, expected_ids, timeout=300):
         deadline = time.time() + timeout
+        last_err = None
         while time.time() < deadline:
             try:
                 data = self.api("GET", "/dags?limit=200")
                 found = {d["dag_id"] for d in data.get("dags", [])}
                 if set(expected_ids) <= found:
                     return found
-            except Exception:
-                pass
+            except Exception as exc:
+                last_err = exc
             time.sleep(3)
-        raise RuntimeError(f"DAGs did not appear: wanted {expected_ids}")
+        raise RuntimeError(
+            f"DAGs did not appear: wanted {expected_ids}; last error: {last_err!r}")
 
     def bundles(self):
         data = self.api("GET", "/dagBundles")
