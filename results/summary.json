@@ -18,7 +18,7 @@
       "verdict": "Supported"
     },
     "H2": {
-      "evidence": "pooled hardened bounds: F1 kill mid-write: 0 failures in 50 trials, 95% upper bound 0.0582; F2 partial write then error: 0 failures in 50 trials, 95% upper bound 0.0582",
+      "evidence": "hardened bounds per fault, pooled across pipelines: F1 kill mid-write: 0 failures in 50 trials, 95% upper bound 0.0582; F2 partial write then error: 0 failures in 50 trials, 95% upper bound 0.0582; F3 duplicate trigger, same interval: 0 failures in 15 trials, 95% upper bound 0.181; F6 late-arriving data, re-run: 0 failures in 6 trials, 95% upper bound 0.393; F4 scheduler restart mid-run: 0 failures in 9 trials, 95% upper bound 0.2831; F5 code deploy mid-run: 0 failures in 3 trials, 95% upper bound 0.6316",
       "verdict": "Supported"
     },
     "H3": {

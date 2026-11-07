@@ -57,7 +57,7 @@ def _failure_stats(records):
 
 def _median_recovery(records):
     vals = [t["recovery_seconds"] for t in records if t.get("recovery_seconds")]
-    return round(statistics.median(vals), 2) if vals else None
+    return round(statistics.median(vals), 2) if vals else "n/a"
 
 
 def compute_verdicts(trials):
@@ -106,13 +106,16 @@ def compute_verdicts(trials):
         h2 = "Partially supported"
     else:
         h2 = "Refuted"
+    # H2 claims every fault cell, so the evidence prints a bound for every
+    # fault the hardened arm ran, pooled across that fault's pipelines.
     pooled = {
         f: _failure_stats(_cell(trials, fault=f, arm="hardened"))
-        for f in ("kill_mid_write", "partial_write_error")
+        for f in FAULT_LABEL
+        if _cell(trials, fault=f, arm="hardened")
     }
     verdicts["H2"] = {
         "verdict": h2,
-        "evidence": "pooled hardened bounds: "
+        "evidence": "hardened bounds per fault, pooled across pipelines: "
                     + "; ".join(
                         f"{FAULT_LABEL[f]}: {s['failures']} failures in {s['n']} "
                         f"trials, 95% upper bound {s['cp95_upper']}"
