@@ -1,5 +1,7 @@
 # airflow-reliability-lab
 
+Live dashboard: https://jesunahmadushno.github.io/airflow-reliability-lab/
+
 The AIR-REL study: does an ML pipeline on Apache Airflow produce the right
 external effect when things go wrong, or only a green DAG?
 
@@ -78,6 +80,18 @@ those records by src/airrel/report.py and is never edited by hand.
   rows, partial write then error) or by the harness (duplicate trigger,
   scheduler process kill and restart, mid-run bundle deploy, late-data
   re-run).
+
+## Live dashboard
+
+https://jesunahmadushno.github.io/airflow-reliability-lab/ is built from site/
+by .github/workflows/pages.yml. Every number on it is read at build time from
+results/, the Markdown files and the Python sources. It replays the recorded
+trials (labelled recorded), runs a model of the two write paths in the
+browser (labelled model), and ports stats.py to a live bounds calculator.
+`cd site && npm ci && npm run build` runs a known-answer check
+(site/src/stats.check.mjs) before the build: the JavaScript bounds must match
+summary.json and RESULTS.md, and the write-path model must reproduce the
+recorded duplicates of every trial it covers.
 
 ## Reproduce
 
