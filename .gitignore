@@ -2,3 +2,9 @@ workdir/
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# site build
+site/node_modules/
+site/dist/
+site/.rubric/
+.venv/
