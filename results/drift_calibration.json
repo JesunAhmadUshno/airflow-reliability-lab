@@ -1,0 +1,25 @@
+{
+  "docs_per_partition": 200,
+  "partitions": [
+    {
+      "drift_flag": 0,
+      "drift_stat": 0.103882,
+      "partition": "2026-01-02",
+      "shifted": false
+    },
+    {
+      "drift_flag": 0,
+      "drift_stat": 0.102771,
+      "partition": "2026-01-03",
+      "shifted": false
+    },
+    {
+      "drift_flag": 1,
+      "drift_stat": 0.49477,
+      "partition": "2026-01-09",
+      "shifted": true
+    }
+  ],
+  "reference_partition": "2026-01-01",
+  "threshold": 0.25
+}

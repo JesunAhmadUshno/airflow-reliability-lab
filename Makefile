@@ -13,4 +13,7 @@ study:
 	$(PY) harness/run_study.py --root workdir/run --airflow-bin $(AIRFLOW)
 	PYTHONPATH=src $(PY) -m airrel.report results RESULTS.md
 
+calibrate:
+	PYTHONPATH=src $(PY) -m airrel.drift_calibration results/drift_calibration.json
+
 reproduce: setup test study
