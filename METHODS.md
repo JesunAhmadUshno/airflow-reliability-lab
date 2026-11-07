@@ -35,8 +35,9 @@ seeded; the same seed always produces the same corpus. No external data is downl
 - version-mix rate = runs with more than one distinct CODE_VERSION / F5 runs.
 - recovery_seconds and extra_task_executions as defined in SPEC.md section 7.
 - Uncertainty: one-sided Clopper-Pearson 95 percent upper bound for a failure probability
-  given k failures in n trials, computed with the beta distribution (scipy-free
-  implementation in src/airrel/stats.py, checked against known values in tests).
+  given k failures in n trials. src/airrel/stats.py finds the bound p by bisection on
+  the binomial CDF, solving P(X <= k | p) = alpha (no beta-distribution call, no scipy),
+  and tests check it against known values (for k = 0 it equals 1 - alpha ** (1 / n)).
 
 ## Repetitions and analysis
 
