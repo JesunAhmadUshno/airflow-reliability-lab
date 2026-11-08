@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: airrel
+Version: 0.1.0
+Summary: AIR-REL: effectively-once ML pipelines on Apache Airflow 3.x, a fault-injection study
+License: Apache-2.0
+Requires-Python: >=3.11
+License-File: LICENSE
+Dynamic: license-file

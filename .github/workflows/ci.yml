@@ -2,7 +2,11 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -21,10 +25,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
-      - name: Unit tests and fixture invariant checks
+      - name: Unit tests, fixture invariant checks, layout and lock
         run: pytest -q
-      - name: Report generator runs on committed trial records
+      - name: Results regenerate unchanged from the trial records
         run: |
-          if [ -f results/trials.jsonl ]; then
-            PYTHONPATH=src python -m airrel.report results /tmp/RESULTS.md
-          fi
+          PYTHONPATH=src python -m airrel.report results RESULTS.md
+          git diff --exit-code RESULTS.md results/summary.json
