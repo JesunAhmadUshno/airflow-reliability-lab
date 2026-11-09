@@ -2,12 +2,12 @@
 // Only the parsed fields reach the page; the raw files are not bundled.
 const int = (s) => Number(s.replace(/,/g, ''));
 
-export function parseAudit(md) {
-  const [, grade, scale] = md.match(/## Grade: ([\d,]+) of ([\d,]+)/);
-  const deductions = [...md.matchAll(/^\| (-[\d,]+) \| (.+?) \|$/gm)].map(([, p, item]) => ({ points: int(p), item }));
-  const total = int(md.match(/\| Total (-[\d,]+) \|/)[1]);
-  const pre = md.match(/are\s+commit (\w+); the first experiment code is (\w+) and (\w+)/);
-  return { grade: int(grade), scale: int(scale), deductions, total, preregCommit: pre[1], codeCommits: [pre[2], pre[3]] };
+// REPORT.md: the threats-to-validity bullets and the pre-registration commits. No grade is parsed.
+export function parseReport(md) {
+  const section = md.split(/^## /m).find((s) => s.startsWith('Threats to validity'));
+  const threats = [...section.matchAll(/^- (.+)$/gm)].map((m) => m[1]);
+  const pre = md.match(/are\s+commit (\w+) \(tag proposal-v1\); the next commits are (\w+)\s+\(research, methods, decisions\) and (\w+) \(the first experiment code\)/);
+  return { threats, preregCommit: pre[1], nextCommits: [pre[2], pre[3]] };
 }
 
 export function parseReadme(md) {
@@ -32,7 +32,7 @@ export function repoDocsPlugin(read) {
     resolveId: (s) => (s === id ? '\0' + id : null),
     load(s) {
       if (s !== '\0' + id) return null;
-      return `export default ${JSON.stringify({ audit: parseAudit(read('AUDIT.md')), readme: parseReadme(read('README.md')), hypotheses: parseHypotheses(read('HYPOTHESES.md')) })};`;
+      return `export default ${JSON.stringify({ report: parseReport(read('REPORT.md')), readme: parseReadme(read('README.md')), hypotheses: parseHypotheses(read('HYPOTHESES.md')) })};`;
     },
   };
 }

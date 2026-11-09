@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "airflow-reliability-lab: effectively-once ML pipelines on an at-least-once orchestrator (Apache Airflow 3.4.0), a pre-registered fault-injection study"
+authors:
+  - family-names: Ushno
+    given-names: Jesun Ahmad
+repository-code: "https://github.com/JesunAhmadUshno/airflow-reliability-lab"
+license: Apache-2.0
+date-released: 2026-11-08

@@ -8,3 +8,4 @@ site/node_modules/
 site/dist/
 site/.rubric/
 .venv/
+*.egg-info/

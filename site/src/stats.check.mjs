@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import { clopperPearsonUpper, round4, trialsForBound } from './stats.js';
 import { parseTrials, parseReportPy, cell, failures, sum, medianRecovery, headline } from './data.js';
 import { parseConstants, simulate, SIM_FAULTS, SIM_PIPELINES } from './sim.js';
-import { parseAudit, parseReadme, parseHypotheses } from './docs.mjs';
+import { parseReport, parseReadme, parseHypotheses } from './docs.mjs';
 
 const read = (p) => fs.readFileSync(new URL(`../../${p}`, import.meta.url), 'utf8');
 const trials = parseTrials(read('results/trials.jsonl'));
@@ -76,11 +76,11 @@ for (const [fault, , faultId] of SIM_FAULTS.filter((f) => f[2])) {
 for (const p of SIM_PIPELINES) for (const arm of ['naive', 'hardened']) assert.equal(simulate({ arm, fault: 'none', pipeline: p[0], ...C }).duplicates, 0);
 
 // 5. Build-time document extraction is internally consistent.
-const audit = parseAudit(read('AUDIT.md'));
-assert.equal(audit.deductions.reduce((a, d) => a + d.points, 0), audit.total, 'AUDIT deductions sum to total');
-assert.equal(audit.scale + audit.total, audit.grade, 'AUDIT grade = scale - deductions');
+const report = parseReport(read('REPORT.md'));
+assert.ok(report.threats.length >= 5, 'REPORT.md threats to validity parsed');
+assert.equal(report.preregCommit, '15d4e12', 'REPORT.md names the lock commit');
 assert.ok(parseReadme(readme).runtimeMinutes > 0);
 assert.deepEqual(parseHypotheses(read('HYPOTHESES.md')).map((h) => h.id), Object.keys(summary.verdicts));
 assert.ok(pipelines.length === 5);
 
-console.log('checks ok', { bounds: h2.map((m) => +m[3]), perCellRows: perCell.length, modelCoveredTrials: covered, auditGrade: audit.grade });
+console.log('checks ok', { bounds: h2.map((m) => +m[3]), perCellRows: perCell.length, modelCoveredTrials: covered, threats: report.threats.length });
