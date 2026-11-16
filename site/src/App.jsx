@@ -114,7 +114,7 @@ function Select({ label, value, onChange, options }) {
 export default function App() {
   useReveal();
   return (
-    <div className="wrap">
+    <div className="wrap"><a className="skip" href="#top">Skip to content</a>
       <MenuBar />
       <div className="glow" aria-hidden="true" />
       <Hero />
@@ -131,7 +131,7 @@ export default function App() {
       <footer>
         Code: Apache-2.0. Every number on this page is read at build time from <code>results/</code>, the repo&apos;s Markdown and its Python sources.
         Charts marked recorded replay the study&apos;s trials; the sink simulator and the bounds calculator compute live in your browser.
-      </footer>
+      <nav className="support" aria-label="Support this work"><a href="https://github.com/sponsors/JesunAhmadUshno">Sponsor this work</a><a href="https://github.com/sponsors/JesunAhmadUshno">Donate</a><a href="https://buymeacoffee.com/jesun">Buy Me a Coffee</a><a href="https://calendly.com/jesunahmadushno/30min">Work with me</a></nav></footer>
     </div>
   );
 }
@@ -140,7 +140,7 @@ function Hero() {
   const supported = Object.values(summary.verdicts).filter((v) => v.verdict === 'Supported').length;
   const nHyp = Object.keys(summary.verdicts).length;
   return (
-    <header className="card hero window" id="top" data-title="airflow-reliability-lab — README">
+    <header className="card hero window" id="top" data-title="airflow-reliability-lab - README">
       <div className="head">
         <p className="eyebrow">Pre-registered fault-injection study · Airflow {env.airflow_version}</p>
         <span className="pill good">● {supported} of {nHyp} hypotheses supported</span>
@@ -175,7 +175,7 @@ function FaultMatrix() {
   const recs = cell(trials, sel);
   const rows = pipelines.map((p) => [p, cell(recs, { pipeline: p })]).filter(([, r]) => r.length);
   return (
-    <section id="matrix" className="card window reveal" data-title={`fault_matrix — ${faults.length} faults × ${ARMS.length} arms`}>
+    <section id="matrix" className="card window reveal" data-title={`fault_matrix - ${faults.length} faults × ${ARMS.length} arms`}>
       <div>
         <p className="eyebrow">Recorded results</p>
         <h2>Every write fault broke the naive arm. None broke the hardened arm.</h2>
@@ -280,7 +280,7 @@ function SinkSimulator() {
   });
   const play = () => { setStep(0); setPlaying(true); };
   return (
-    <section id="sim" className="card window reveal" data-title="write_rows.py — live">
+    <section id="sim" className="card window reveal" data-title="write_rows.py - live">
       <div className="head">
         <div>
           <p className="eyebrow">Live model, computed in your browser</p>
@@ -423,7 +423,7 @@ function Bounds() {
   const sy = (p) => pad.t + (1 - p) * (H - pad.t - pad.b);
   const curve = useMemo(() => Array.from({ length: nMax - kk }, (_, i) => [kk + 1 + i, clopperPearsonUpper(kk, kk + 1 + i)]).filter(([v]) => v <= nMax), [kk]);
   return (
-    <section id="bounds" className="card window reveal" data-title="stats.py — clopper_pearson_upper">
+    <section id="bounds" className="card window reveal" data-title="stats.py - clopper_pearson_upper">
       <p className="eyebrow">Live calculator · port of src/airrel/stats.py</p>
       <h2>How sure is <em>zero failures</em>? It depends on n.</h2>
       <p className="sub">
@@ -477,7 +477,7 @@ function Recovery() {
   const f12 = groups.filter((g) => ['F1', 'F2'].includes(g.f.code) && g.arm === 'hardened').flatMap((g) => g.r);
   const f4 = groups.filter((g) => g.f.code === 'F4').flatMap((g) => g.r);
   return (
-    <section id="recovery" className="card window reveal" data-title="recovery_seconds — recorded">
+    <section id="recovery" className="card window reveal" data-title="recovery_seconds - recorded">
       <p className="eyebrow">Recorded replay</p>
       <h2>Recovery costs one retry and a few seconds.</h2>
       <p className="sub">
@@ -508,7 +508,7 @@ function Pinning() {
   const W = narrow ? 380 : 960, lab = narrow ? 0 : 210, rowH = narrow ? 46 : 30, H = runs.length * rowH + 8, by0 = narrow ? 18 : 2;
   const vColor = (v) => (v === versions[0] ? 'var(--primary)' : 'var(--warn)');
   return (
-    <section id="pinning" className="card window reveal" data-title="dag_bundle — git vs local">
+    <section id="pinning" className="card window reveal" data-title="dag_bundle - git vs local">
       <p className="eyebrow">Recorded replay · F5 code deploy mid-run</p>
       <h2>A Git bundle pins each run to <em>one</em> code version.</h2>
       <p className="sub">
@@ -535,7 +535,7 @@ function Pinning() {
 
 function Hypotheses() {
   return (
-    <section id="hypotheses" className="card window reveal" data-title="HYPOTHESES.md — verdicts">
+    <section id="hypotheses" className="card window reveal" data-title="HYPOTHESES.md - verdicts">
       <p className="eyebrow">Pre-registered, then tested</p>
       <h2>{docs.hypotheses.length} hypotheses, written down before any experiment code.</h2>
       <p className="sub">
@@ -562,7 +562,7 @@ function Limitations() {
   const r = docs.report;
   const inDist = drift.partitions.filter((p) => !p.shifted), shifted = drift.partitions.filter((p) => p.shifted);
   return (
-    <section id="limits" className="card window reveal" data-title="REPORT.md — threats to validity">
+    <section id="limits" className="card window reveal" data-title="REPORT.md - threats to validity">
       <p className="eyebrow">Limitations and threats to validity</p>
       <h2>What this study cannot tell you.</h2>
       <p className="sub">
@@ -591,7 +591,7 @@ function Reproduce() {
     ['REPORT.md', 'Report', 'Verdict, threats, review, open gaps'],
   ];
   return (
-    <section id="reproduce" className="card window reveal" data-title="Terminal — make reproduce">
+    <section id="reproduce" className="card window reveal" data-title="Terminal - make reproduce">
       <p className="eyebrow">Reproduce it</p>
       <h2>One command reruns the whole study locally.</h2>
       <ol className="steps" style={{ marginTop: 16 }}>
