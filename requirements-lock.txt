@@ -20,7 +20,7 @@ asgiref==3.13.0
 attrs==26.1.0
 babel==2.18.0
 cachetools==7.3.0
-cadwyn==8.2.0
+cadwyn==9.0.0
 certifi==2026.10.23
 cffi==2.1.1
 charset-normalizer==3.5.2
