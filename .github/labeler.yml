@@ -1,0 +1,21 @@
+src:
+  - changed-files:
+      - any-glob-to-any-file: ["src/**"]
+dags:
+  - changed-files:
+      - any-glob-to-any-file: ["dags_src/**"]
+harness:
+  - changed-files:
+      - any-glob-to-any-file: ["harness/**"]
+tests:
+  - changed-files:
+      - any-glob-to-any-file: ["tests/**"]
+docs:
+  - changed-files:
+      - any-glob-to-any-file: ["README.md", "REPORT.md", "CHANGELOG.md"]
+site:
+  - changed-files:
+      - any-glob-to-any-file: ["site/**"]
+automation:
+  - changed-files:
+      - any-glob-to-any-file: [".github/**"]
