@@ -1,24 +1,24 @@
 {
   "environment": {
     "airflow_version": "3.4.0",
-    "finished_utc": "2026-11-06T19:46:59.151913+00:00",
+    "finished_utc": "2026-11-17T23:34:48.544536+00:00",
     "harness_python": "/home/hatch/workspace/gap-closure/venv-airrel/bin/python",
-    "n_f1f2_per_cell": 10,
+    "n_f1f2_per_cell": 6,
     "phase_errors": {},
     "python_version": "3.12.3",
-    "smoke_mean_wall_seconds": 6.35,
-    "started_utc": "2026-11-06T19:21:55.290273+00:00",
-    "study_repo_head": "7bbc64a82c29f627e37fbefeb38bc218fcfe8656",
-    "trial_count": 305
+    "smoke_mean_wall_seconds": 27.07,
+    "started_utc": "2026-11-17T23:00:16.068353+00:00",
+    "study_repo_head": "0788eb3c72081b9b13253fdeb0725c2457d58cf1",
+    "trial_count": 225
   },
-  "trials": 305,
+  "trials": 225,
   "verdicts": {
     "H1": {
       "evidence": "naive arm failed 4 of 6 fault types; F1 failure rate 1.0, F2 failure rate 1.0",
       "verdict": "Supported"
     },
     "H2": {
-      "evidence": "pooled hardened bounds: F1 kill mid-write: 0 failures in 50 trials, 95% upper bound 0.0582; F2 partial write then error: 0 failures in 50 trials, 95% upper bound 0.0582",
+      "evidence": "pooled hardened bounds: F1 kill mid-write: 0 failures in 30 trials, 95% upper bound 0.095; F2 partial write then error: 0 failures in 30 trials, 95% upper bound 0.095",
       "verdict": "Supported"
     },
     "H3": {
@@ -26,7 +26,7 @@
       "verdict": "Supported"
     },
     "H4": {
-      "evidence": "H4a: exactly 1 extra execution in 100% of 100 hardened F1/F2 trials. H4b: green-but-wrong in 100% of 100 failed naive F1/F2 trials",
+      "evidence": "H4a: exactly 1 extra execution in 100% of 60 hardened F1/F2 trials. H4b: green-but-wrong in 100% of 60 failed naive F1/F2 trials",
       "verdict": "Supported"
     }
   }

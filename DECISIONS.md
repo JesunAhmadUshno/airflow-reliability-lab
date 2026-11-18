@@ -83,3 +83,23 @@ AIR-REL study", 2026-11-06).
   rows, inside the transaction). No write semantics, keys, or fault points
   changed. The full study was re-run as run 2 under the fixed code; run 1
   records are superseded.
+
+## 2026-11-17, gap-closure re-execution
+
+- D16. Full re-execution of the frozen study (2026-11-17, gap-closure
+  programme), run in a scratch clone at the study head (0788eb3) on this VM
+  with the harness unmodified. Every failure aggregate reproduced exactly:
+  the naive write-path faults failed 121 of 121 trials in the frozen record
+  and 81 of 81 in the re-execution (100 percent in both); the hardened design
+  failed 0 of 133 frozen and 0 of 93 in the re-execution; lost records were 0
+  in both; all four hypotheses (H1 to H4) came out Supported again under the
+  frozen rules; the test suite passed (15 passed). The trial count differs:
+  225 trials in the re-execution against 305 in the frozen record. The
+  study's own pre-registered adaptation rule fired: the smoke mean trial wall
+  time on this VM was 27.07 s, above the rule's 25 s threshold, so F1 and F2
+  ran at n 6 per cell instead of n 10. No pre-registered design element
+  changed. This is why the regenerated RESULTS.md, results/summary.json,
+  results/trials.jsonl and results/environment.json in this branch differ
+  from the frozen files in trial count, per-cell denominators, and the pooled
+  H2 and H4 bounds that scale with n, while every failure rate and every
+  verdict is unchanged.
